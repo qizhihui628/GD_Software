@@ -11,7 +11,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+char aaa=0;
+char aaannn=0;
+
 int main(void) {
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
+
+
 	return EXIT_SUCCESS;
+
 }
