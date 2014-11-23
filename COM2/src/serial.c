@@ -33,13 +33,21 @@ re_error_enum serial_creat(char* dev_name_ptr, int baud_rate, int* fd_ptr)
 		return RE_INVALID_PARAMETER;
 
 	}
-	fd = open(dev_name_ptr, O_RDWR | O_NOCTTY);
+	fd = open(dev_name_ptr, O_RDWR | O_NOCTTY |O_NDELAY);
 	printf("creat success\r\n");
 	if (fd < 0)
 	{
 		perror(dev_name_ptr);
 		return RE_OP_FAIL;
 	}
+    if(fcntl(fd, F_SETFL, 0)<0)
+    {
+        printf("fcntl failed!\n");
+    }
+    else
+    {
+        printf("fcntl=%d\n",fcntl(fd, F_SETFL,0));
+    }
 
     tcgetattr(fd, &newtio);
     cfsetispeed(&newtio, baud);
@@ -51,10 +59,12 @@ re_error_enum serial_creat(char* dev_name_ptr, int baud_rate, int* fd_ptr)
          return RE_OP_FAIL;
       }
 
+
     	newtio.c_cflag &= ~CSIZE;
     	newtio.c_cflag |= CS8;
         newtio.c_cflag &= ~CSTOPB;
         newtio.c_cflag &= ~PARENB;
+        newtio.c_cflag &= ~CRTSCTS;
       //  newtio.c_cflag &= ~INPCK;   			no need~~~
         newtio.c_cflag |= (CLOCAL | CREAD);
 
@@ -66,7 +76,7 @@ re_error_enum serial_creat(char* dev_name_ptr, int baud_rate, int* fd_ptr)
         newtio.c_iflag &= ~(ICRNL | INLCR);
         newtio.c_iflag &= ~(IXON | IXOFF | IXANY);    //添加的
 
-        newtio.c_cc[VTIME] = 1;		/*100ms*/
+        newtio.c_cc[VTIME] = 0;		/*100ms*/
         newtio.c_cc[VMIN] = 0;
 
         tcflush(fd, TCIOFLUSH);
@@ -81,7 +91,7 @@ re_error_enum serial_creat(char* dev_name_ptr, int baud_rate, int* fd_ptr)
 
 }
 
-re_error_enum serial_write(int fd, char *buf_ptr, int buf_size)
+re_error_enum serial_write(int fd, unsigned char *buf_ptr, int buf_size)
 {
 	if (buf_ptr == NULL)
 	{

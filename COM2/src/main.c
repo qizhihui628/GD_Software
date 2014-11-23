@@ -8,6 +8,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 
 int COM2_fd; 		/* input sources 1 and 2 */
@@ -17,8 +18,9 @@ int Cooling_Module_Polling(int Cooling_Addr)
 	int i;
 	unsigned char buf_rx[128];
 	int buf_counter;
-	char buf_ptr[] = {0x01,0x0f,0x00,0x00,0x00,0x04,0x01,0x00,0x3e,0x96};
+	unsigned char buf_ptr[] = {0x01,0x0f,0x00,0x00,0x00,0x04,0x01,0x00,0x3e,0x96};
 	serial_write(COM2_fd,buf_ptr,(sizeof(buf_ptr)/sizeof(buf_ptr[0])));
+	usleep(300000);
 	if(serial_read(COM2_fd,128,buf_rx,&buf_counter) == RE_SUCCESS)
 	{
 		for(i=0;i<buf_counter;i++)
@@ -26,6 +28,7 @@ int Cooling_Module_Polling(int Cooling_Addr)
 			printf("%x\r\n",buf_rx[i]);
 		}
 	}
+
 	return EXIT_SUCCESS;
 }
 
@@ -38,7 +41,7 @@ int main(void)
 	serial_init();	/* open_input_source opens a device, sets the port correctly, and returns a file descriptor */
 					/*open_input_source*/
 
-	if (serial_creat("/dev/ttyS1", 9600,&COM2_fd) != RE_SUCCESS)	/*Init ttyS2 , 9600 */
+	if (serial_creat("/dev/ttymxc1", 9600,&COM2_fd) != RE_SUCCESS)	/*Init ttyS2 , 9600 ,ttymxc1*/
 	{
 		printf("error: ttyS2 init failed\n");
 		return EXIT_FAILURE;
